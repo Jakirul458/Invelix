@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================
+   Stock & Invoice SaaS — Design System
+   Professional B2B • Indigo accent on slate neutrals
+   All colors HSL.
+   ===================================================== */
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 239 84% 59%;          /* #4F46E5 indigo */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 239 90% 70%;
+
+    --accent-success: 142 71% 45%;   /* #22C55E green */
+    --accent-success-foreground: 0 0% 100%;
+
+    --secondary: 210 16% 95%;
+    --secondary-foreground: 222 47% 14%;
+
+    --muted: 210 16% 95%;
+    --muted-foreground: 215 16% 46%;
+
+    --accent: 239 90% 96%;
+    --accent-foreground: 239 84% 40%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 64% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 239 84% 58%;
+
+    --radius: 0.625rem;
+
+    /* gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(239 84% 59%), hsl(258 85% 62%));
+    --gradient-subtle: linear-gradient(180deg, hsl(210 20% 99%), hsl(210 20% 96%));
+    --gradient-auth: linear-gradient(160deg, hsl(220 20% 97%) 0%, hsl(232 60% 95%) 55%, hsl(239 70% 92%) 100%);
+
+    /* shadows */
+    --shadow-sm: 0 1px 2px hsl(222 47% 11% / 0.04);
+    --shadow-md: 0 4px 12px hsl(222 47% 11% / 0.06);
+    --shadow-lg: 0 12px 32px hsl(222 47% 11% / 0.08);
+    --shadow-glow: 0 8px 24px hsl(239 84% 58% / 0.25);
+
+    /* sidebar */
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 239 90% 70%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 40% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 40% 18%;
+    --sidebar-ring: 239 84% 58%;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 20% 96%;
+
+    --card: 222 40% 11%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 222 40% 11%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 239 90% 70%;
+    --primary-foreground: 222 47% 7%;
+    --primary-glow: 239 90% 78%;
+
+    --secondary: 222 40% 16%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 222 40% 16%;
+    --muted-foreground: 215 16% 65%;
+
+    --accent: 222 40% 20%;
+    --accent-foreground: 239 90% 80%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 158 64% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 222 40% 18%;
+    --input: 222 40% 18%;
+    --ring: 239 90% 70%;
+
+    --sidebar-background: 222 47% 5%;
+    --sidebar-foreground: 210 20% 88%;
+    --sidebar-primary: 239 90% 70%;
+    --sidebar-primary-foreground: 222 47% 7%;
+    --sidebar-accent: 222 40% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 40% 12%;
+    --sidebar-ring: 239 90% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-feature-settings: 'tnum', 'zero';
+  }
+
+  /* tabular numerals for any money/number display */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer components {
+  .card-elevated {
+    @apply bg-card border rounded-xl shadow-[var(--shadow-md)];
+  }
+}
+
+/* Print: A4 invoice */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html, body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print, .invoice-print * {
+    visibility: visible;
+  }
+  .invoice-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 210mm !important;
+    box-shadow: none !important;
+  }
+  .no-print, .print\:hidden {
+    display: none !important;
+  }
+}
