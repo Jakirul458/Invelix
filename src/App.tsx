@@ -9,6 +9,7 @@ import AppLayout from "@/layouts/AppLayout";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import AdminLogin from "@/pages/AdminLogin";
+import AdminResetPassword from "@/pages/AdminResetPassword";
 import Pending from "@/pages/Pending";
 import Dashboard from "@/pages/Dashboard";
 import Settings from "@/pages/Settings";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/reset-password" element={<AdminResetPassword />} />
             <Route path="/pending" element={<RequireAuth><Pending /></RequireAuth>} />
 
             {/* Admin */}

@@ -44,6 +44,7 @@ export interface BusinessData {
   pan_number: string | null;
   logo_url: string | null;
   signature_url: string | null;
+  qr_code_url?: string | null;
   bank_name?: string | null;
   bank_account?: string | null;
   bank_ifsc?: string | null;
@@ -80,7 +81,7 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
         <div className="grid grid-cols-3 border-b-2 border-black">
           <div className="col-span-1" />
           <div className="col-span-1 text-center py-1.5 font-bold text-base tracking-wide border-l border-r border-black">
-            TAX INVOICE
+            INVOICE
           </div>
           <div className="col-span-1 text-right py-1.5 px-2 text-[10px] italic">
             (ORIGINAL FOR RECIPIENT)
@@ -149,32 +150,32 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
         <table className="w-full border-collapse">
           <thead>
             <tr className="text-center border-b border-black">
-              <th className="border-r border-black py-1 px-1 w-8 font-semibold align-middle">Sl<br/>No.</th>
-              <th className="border-r border-black py-1 px-1 text-left font-semibold align-middle">Description of Goods</th>
-              <th className="border-r border-black py-1 px-1 w-16 font-semibold align-middle">HSN/SAC</th>
+              <th className="border-r border-black py-1 px-1 w-8 font-semibold align-middle text-[10px]">Sl<br/>No.</th>
+              <th className="border-r border-black py-1 px-1 text-left font-semibold align-middle text-[10px]">Description of Goods</th>
+              <th className="border-r border-black py-1 px-1 w-14 font-semibold align-middle text-[10px]">HSN/SAC</th>
               {invoice.gst_enabled && (
-                <th className="border-r border-black py-1 px-1 w-16 font-semibold align-middle">GST<br/>Rate</th>
+                <th className="border-r border-black py-1 px-1 w-12 font-semibold align-middle text-[10px]">GST<br/>Rate</th>
               )}
-              <th className="border-r border-black py-1 px-1 w-16 font-semibold align-middle">Quantity</th>
-              <th className="border-r border-black py-1 px-1 w-20 font-semibold align-middle">Rate</th>
-              <th className="border-r border-black py-1 px-1 w-10 font-semibold align-middle">per</th>
-              <th className="py-1 px-1 w-24 font-semibold align-middle text-right">Amount</th>
+              <th className="border-r border-black py-1 px-1 w-14 font-semibold align-middle text-right text-[10px]">Qty</th>
+              <th className="border-r border-black py-1 px-1 w-16 font-semibold align-middle text-right text-[10px]">Rate</th>
+              <th className="border-r border-black py-1 px-1 w-10 font-semibold align-middle text-center text-[10px]">per</th>
+              <th className="py-1 px-1 w-20 font-semibold align-middle text-right text-[10px]">Amount</th>
             </tr>
           </thead>
           <tbody>
             {/* Item rows */}
             {items.map((it, idx) => (
-              <tr key={idx} className="align-top">
-                <td className="border-r border-black px-1 pt-1 text-center">{idx + 1}</td>
-                <td className="border-r border-black px-1 pt-1 font-semibold uppercase">{it.product_name}</td>
-                <td className="border-r border-black px-1 pt-1 text-center">{it.hsn_code || "-"}</td>
+              <tr key={idx} className="align-top border-b border-gray-300">
+                <td className="border-r border-black px-1 py-1 text-center text-[10px]">{idx + 1}</td>
+                <td className="border-r border-black px-1 py-1 font-semibold uppercase text-[10px]">{it.product_name}</td>
+                <td className="border-r border-black px-1 py-1 text-center text-[10px] font-sans">{it.hsn_code || "-"}</td>
                 {invoice.gst_enabled && (
-                  <td className="border-r border-black px-1 pt-1 text-center font-sans">{num(it.gst_rate)} %</td>
+                  <td className="border-r border-black px-1 py-1 text-center font-sans text-[10px]">{num(it.gst_rate)}%</td>
                 )}
-                <td className="border-r border-black px-1 pt-1 text-right font-sans">{num(it.quantity)} PCS</td>
-                <td className="border-r border-black px-1 pt-1 text-right font-sans">{num(it.selling_price)}</td>
-                <td className="border-r border-black px-1 pt-1 text-center">PCS</td>
-                <td className="px-1 pt-1 text-right font-sans">{num(it.selling_price * it.quantity)}</td>
+                <td className="border-r border-black px-1 py-1 text-right font-sans text-[10px]">{num(it.quantity)}</td>
+                <td className="border-r border-black px-1 py-1 text-right font-sans text-[10px]">{inr(it.selling_price)}</td>
+                <td className="border-r border-black px-1 py-1 text-center text-[10px]">PCS</td>
+                <td className="px-1 py-1 text-right font-sans text-[10px]">{inr(it.selling_price * it.quantity)}</td>
               </tr>
             ))}
 
@@ -215,50 +216,18 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
             {/* ── GRAND TOTAL ── */}
             <tr className="border-t-2 border-black font-bold bg-gray-50">
               <td className="border-r border-black" />
-              <td className="border-r border-black px-1 py-1 text-right">Total</td>
+              <td className="border-r border-black px-1 py-1 text-right text-[10px]">Total</td>
               <td className="border-r border-black" />
               {invoice.gst_enabled && <td className="border-r border-black" />}
-              <td className="border-r border-black px-1 py-1 text-right font-sans">{num(totalQty)} PCS</td>
+              <td className="border-r border-black px-1 py-1 text-right font-sans text-[10px]">{num(totalQty)}</td>
               <td className="border-r border-black" />
               <td className="border-r border-black" />
-              <td className="px-1 py-1 text-right font-sans font-bold">{inr(finalRounded)}</td>
+              <td className="px-1 py-1 text-right font-sans font-bold text-[10px]">{inr(finalRounded)}</td>
             </tr>
 
-            {/* ── PAID NOW ── only show if partial payment was made ── */}
-            {hasPaid && (
-              <tr className="border-t border-dashed border-black">
-                <td className="border-r border-black" />
-                <td className="border-r border-black px-1 py-1 text-right italic text-[10.5px]">
-                  Paid Amount
-                </td>
-                <td className="border-r border-black" />
-                {invoice.gst_enabled && <td className="border-r border-black" />}
-                <td className="border-r border-black" />
-                <td className="border-r border-black" />
-                <td className="border-r border-black" />
-                <td className="px-1 py-1 text-right font-sans text-[10.5px] font-semibold" style={{ color: "#166534" }}>
-                  (−) {inr(invoice.paid_amount)}
-                </td>
-              </tr>
-            )}
-
-            {/* ── BALANCE DUE ── only show if something is due ── */}
-            {hasDue && (
-              <tr className="border-t border-black font-bold">
-                <td className="border-r border-black" />
-                <td className="border-r border-black px-1 py-1.5 text-right" style={{ fontSize: "11.5px" }}>
-                  Balance Due
-                </td>
-                <td className="border-r border-black" />
-                {invoice.gst_enabled && <td className="border-r border-black" />}
-                <td className="border-r border-black" />
-                <td className="border-r border-black" />
-                <td className="border-r border-black" />
-                <td className="px-1 py-1.5 text-right font-sans font-bold" style={{ fontSize: "12px", color: "#92400E" }}>
-                  {inr(invoice.due_amount)}
-                </td>
-              </tr>
-            )}
+            {/* ── PAID AMOUNT ROW REMOVED ── */}
+            {/* ── BALANCE DUE ── HIDDEN FROM CUSTOMER VIEW ── */}
+            {/* Balance due row removed from display - kept in backend for internal tracking */}
           </tbody>
         </table>
 
@@ -269,18 +238,6 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
             <div className="font-bold uppercase">INR {numberToWordsIN(finalRounded)}</div>
             <div className="italic text-[10px]">E. & O.E</div>
           </div>
-          {/* Payment status note */}
-          {invoice.status !== "paid" && hasDue && (
-            <div className="mt-1 text-[10px] border border-dashed border-gray-400 rounded px-2 py-1 inline-block">
-              <span className="font-semibold">Note:</span> Balance due of{" "}
-              <span className="font-bold">{inr(invoice.due_amount)}</span> is pending from customer.
-            </div>
-          )}
-          {invoice.status === "paid" && (
-            <div className="mt-1 text-[10px] border border-dashed border-gray-400 rounded px-2 py-1 inline-block font-semibold uppercase tracking-wide">
-              ✓ Payment Received in Full
-            </div>
-          )}
         </div>
 
         {/* ── Bottom: Remarks + Bank + Signature ── */}
@@ -313,6 +270,16 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
             </div>
 
             <div className="absolute bottom-1 right-2 text-center">
+              {business.qr_code_url && (
+                <div className="mb-2">
+                  <img
+                    src={business.qr_code_url}
+                    alt="QR Code"
+                    crossOrigin="anonymous"
+                    className="h-14 w-14 object-contain ml-auto border border-black p-0.5"
+                  />
+                </div>
+              )}
               {business.signature_url && (
                 <img
                   src={business.signature_url}

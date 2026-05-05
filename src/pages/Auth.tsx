@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
+import { logOwnerActivity } from "@/lib/activity-logger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,12 +50,22 @@ export default function Auth() {
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: values.email,
           password: values.password,
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
+
+        // Log signup activity if user was created
+        if (data.user?.id) {
+          await logOwnerActivity({
+            ownerId: data.user.id,
+            activityType: 'signup',
+            description: `New account created with email: ${values.email}`,
+          });
+        }
+
         toast({
           title: "Account created",
           description: "An admin must activate your account before you can use the app.",
@@ -64,19 +75,61 @@ export default function Auth() {
           email: values.email,
           password: values.password,
         });
-        if (error) throw error;
+        if (error) {
+          // Log failed signin attempt
+          const { data: owner } = await supabase
+            .from("owners")
+            .select("id")
+            .eq("email", values.email)
+            .maybeSingle();
+          
+          if (owner?.id) {
+            await logOwnerActivity({
+              ownerId: owner.id,
+              activityType: 'signin_failed',
+              description: error.message,
+              status: 'failed',
+            });
+          }
+          throw error;
+        }
 
         localStorage.setItem("invelix_remember", remember ? "1" : "0");
 
-        // First-time user check: do they have an owner profile filled in?
+        // Update last signin time and count
         const userId = data.user?.id;
         if (userId) {
+          // Log successful signin
+          await logOwnerActivity({
+            ownerId: userId,
+            activityType: 'signin',
+            description: `Signed in from email: ${values.email}`,
+          });
+
+          // Update owner's last_signin_at and signin_count
           const { data: owner } = await supabase
+            .from("owners")
+            .select("signin_count")
+            .eq("id", userId)
+            .maybeSingle();
+
+          const currentCount = owner?.signin_count || 0;
+          await supabase
+            .from("owners")
+            .update({
+              last_signin_at: new Date().toISOString(),
+              signin_count: currentCount + 1,
+            })
+            .eq("id", userId);
+
+          // First-time user check: do they have an owner profile filled in?
+          const { data: ownerProfile } = await supabase
             .from("owners")
             .select("business_name")
             .eq("id", userId)
             .maybeSingle();
-          if (!owner || !owner.business_name) {
+
+          if (!ownerProfile || !ownerProfile.business_name) {
             toast({
               title: "Welcome to Invelix",
               description: "No business found. Let's set up your store.",

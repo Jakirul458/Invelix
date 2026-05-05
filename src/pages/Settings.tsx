@@ -15,7 +15,7 @@ import { businessSchema, type BusinessFormValues } from "@/lib/schemas";
 import { SignaturePad } from "@/components/settings/SignaturePad";
 import { FileUpload } from "@/components/settings/FileUpload";
 
-async function signedUrl(path: string | null, bucket: "signatures" | "logos") {
+async function signedUrl(path: string | null, bucket: "signatures" | "logos" | "qrcodes") {
   if (!path) return null;
   if (path.startsWith("http")) return path;
   const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60);
@@ -30,8 +30,11 @@ export default function Settings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [sigPath, setSigPath] = useState<string | null>(null);
   const [sigUrl, setSigUrl] = useState<string | null>(null);
+  const [qrPath, setQrPath] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingSig, setUploadingSig] = useState(false);
+  const [uploadingQr, setUploadingQr] = useState(false);
 
   const form = useForm<BusinessFormValues>({
     resolver: zodResolver(businessSchema),
@@ -64,12 +67,15 @@ export default function Settings() {
         });
         setLogoPath(data.logo_url);
         setSigPath(data.signature_url);
-        const [lu, su] = await Promise.all([
+        setQrPath(data.qr_code_url);
+        const [lu, su, qu] = await Promise.all([
           signedUrl(data.logo_url, "logos"),
           signedUrl(data.signature_url, "signatures"),
+          signedUrl(data.qr_code_url, "qrcodes"),
         ]);
         setLogoUrl(lu);
         setSigUrl(su);
+        setQrUrl(qu);
       }
       setLoading(false);
     })();
@@ -88,32 +94,47 @@ export default function Settings() {
   };
 
   const uploadFile = async (
-    bucket: "logos" | "signatures",
+    bucket: "logos" | "signatures" | "qrcodes",
     file: Blob,
     ext: string,
   ) => {
     if (!user) return null;
-    const path = `${user.id}/${bucket === "logos" ? "logo" : "signature"}.${ext}`;
+    const path = `${user.id}/${bucket === "logos" ? "logo" : bucket === "signatures" ? "signature" : "qr"}.${ext}`;
     const { error } = await supabase.storage.from(bucket).upload(path, file, {
       contentType: file.type || "image/png",
       upsert: true,
     });
     if (error) throw error;
-    const update = bucket === "logos" ? { logo_url: path } : { signature_url: path };
+    let update;
+    if (bucket === "logos") update = { logo_url: path };
+    else if (bucket === "signatures") update = { signature_url: path };
+    else update = { qr_code_url: path };
     const { error: e2 } = await supabase.from("owners").update(update).eq("id", user.id);
     if (e2) throw e2;
     const url = await signedUrl(path, bucket);
     return { path, url };
   };
 
-  const removeFile = async (bucket: "logos" | "signatures") => {
+  const removeFile = async (bucket: "logos" | "signatures" | "qrcodes") => {
     if (!user) return;
-    const path = bucket === "logos" ? logoPath : sigPath;
+    let path: string | null = null;
+    if (bucket === "logos") path = logoPath;
+    else if (bucket === "signatures") path = sigPath;
+    else path = qrPath;
+    
     if (path) await supabase.storage.from(bucket).remove([path]);
-    const update = bucket === "logos" ? { logo_url: null } : { signature_url: null };
+    
+    let update: any;
+    if (bucket === "logos") update = { logo_url: null };
+    else if (bucket === "signatures") update = { signature_url: null };
+    else update = { qr_code_url: null };
+    
     await supabase.from("owners").update(update).eq("id", user.id);
+    
     if (bucket === "logos") { setLogoPath(null); setLogoUrl(null); }
-    else { setSigPath(null); setSigUrl(null); }
+    else if (bucket === "signatures") { setSigPath(null); setSigUrl(null); }
+    else { setQrPath(null); setQrUrl(null); }
+    
     toast({ title: "Removed" });
   };
 
@@ -299,6 +320,40 @@ export default function Settings() {
                     finally { setUploadingSig(false); }
                   }}
                 />
+              </div>
+            </Card>
+
+            <Card className="p-5 space-y-4">
+              <div>
+                <h3 className="font-medium">QR Code</h3>
+                <p className="text-xs text-muted-foreground mt-1">PNG/JPG, max 2MB. Shown above signature on invoices.</p>
+              </div>
+              {qrUrl ? (
+                <div className="rounded-lg border bg-muted/30 p-4 grid place-items-center">
+                  <img src={qrUrl} alt="QR Code" className="h-32 w-32 object-contain border border-black p-1" />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed p-8 text-center text-xs text-muted-foreground">No QR code uploaded</div>
+              )}
+              <div className="flex items-center gap-2">
+                <FileUpload
+                  uploading={uploadingQr}
+                  label={qrUrl ? "Replace QR code" : "Upload QR code"}
+                  onUpload={async (f) => {
+                    setUploadingQr(true);
+                    try {
+                      const ext = f.name.split(".").pop() || "png";
+                      const r = await uploadFile("qrcodes", f, ext);
+                      if (r) { setQrPath(r.path); setQrUrl(r.url); toast({ title: "QR code updated" }); }
+                    } catch (e: any) { toast({ title: "Upload failed", description: e.message, variant: "destructive" }); }
+                    finally { setUploadingQr(false); }
+                  }}
+                />
+                {qrUrl && (
+                  <Button variant="ghost" size="sm" onClick={() => removeFile("qrcodes")}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                )}
               </div>
             </Card>
           </div>

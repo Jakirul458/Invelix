@@ -24,6 +24,7 @@ export const businessSchema = z.object({
   bank_account: z.string().trim().max(40).optional().or(z.literal("")),
   bank_branch: z.string().trim().max(120).optional().or(z.literal("")),
   bank_ifsc: z.string().trim().max(20).optional().or(z.literal("")),
+  qr_code_url: z.string().url().optional().or(z.literal("")).nullable(),
 });
 export type BusinessFormValues = z.infer<typeof businessSchema>;
 

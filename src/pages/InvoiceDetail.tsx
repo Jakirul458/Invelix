@@ -18,7 +18,7 @@ import {
 
 const SIGNED_URL_TTL = 60 * 60;
 
-async function signedUrl(path: string | null, bucket: "signatures" | "logos") {
+async function signedUrl(path: string | null, bucket: "signatures" | "logos" | "qrcodes") {
   if (!path) return null;
   if (path.startsWith("http")) return path;
   const { data } = await supabase.storage.from(bucket).createSignedUrl(path, SIGNED_URL_TTL);
@@ -79,12 +79,13 @@ export default function InvoiceDetail() {
         .single();
 
       /* ── 4. signed URLs — only if owner exists ── */
-      const [logoUrl, sigUrl] = owner
+      const [logoUrl, sigUrl, qrUrl] = owner
         ? await Promise.all([
             signedUrl(owner.logo_url ?? null, "logos"),
             signedUrl(owner.signature_url ?? null, "signatures"),
+            signedUrl((owner as any).qr_code_url ?? null, "qrcodes"),
           ])
-        : [null, null];
+        : [null, null, null];
 
       const itemsWithHsn = ((items ?? []) as any[]).map((it) => ({
         ...it,
@@ -92,7 +93,7 @@ export default function InvoiceDetail() {
       })) as InvoiceItem[];
 
       const business: BusinessData = owner
-        ? { ...owner, logo_url: logoUrl, signature_url: sigUrl }
+        ? { ...owner, logo_url: logoUrl, signature_url: sigUrl, qr_code_url: qrUrl }
         : ({} as BusinessData);
 
       return { invoice: inv as InvoiceData, items: itemsWithHsn, business };
