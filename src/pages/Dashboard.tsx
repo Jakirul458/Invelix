@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/lib/auth-store";
 import {
   TrendingUp, IndianRupee, FileText, AlertCircle, Loader2,
-  ArrowUpRight, ArrowDownRight,
+  ArrowUpRight, ArrowDownRight, Package, // ✅ added
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip,
@@ -23,6 +23,12 @@ interface Row {
   paid_amount: number;
   due_amount: number;
   profit: number;
+}
+
+/* ✅ NEW */
+interface Product {
+  stock_qty: number;
+  cost_price: number;
 }
 
 type Range = "daily" | "monthly" | "yearly";
@@ -50,6 +56,7 @@ export default function Dashboard() {
   const { user } = useAuthStore();
   const [range, setRange] = useState<Range>("monthly");
 
+  /* ── invoices ── */
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["dashboard", user?.id],
     enabled: !!user,
@@ -63,6 +70,20 @@ export default function Dashboard() {
     },
   });
 
+  /* ✅ NEW: products query */
+  const { data: products = [] } = useQuery({
+    queryKey: ["products-dashboard", user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<Product[]> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("stock_qty, cost_price");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  /* ── totals ── */
   const totals = useMemo(() => {
     return rows.reduce(
       (acc, r) => {
@@ -76,6 +97,14 @@ export default function Dashboard() {
       { sales: 0, profit: 0, due: 0, paid: 0, count: 0 },
     );
   }, [rows]);
+
+  /* ✅ NEW: inventory calculation */
+  const inventoryValue = useMemo(() => {
+    return products.reduce(
+      (sum, p) => sum + Number(p.stock_qty) * Number(p.cost_price),
+      0
+    );
+  }, [products]);
 
   const marginPct = totals.sales > 0
     ? ((totals.profit / totals.sales) * 100).toFixed(1)
@@ -149,7 +178,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           label="Total Sales"
           value={inr(totals.sales)}
@@ -186,162 +215,94 @@ export default function Dashboard() {
           sub={`₹${totals.count > 0 ? Math.round(totals.sales / totals.count).toLocaleString("en-IN") : 0} avg`}
           positive
         />
+
+        {/* ✅ NEW INVENTORY CARD */}
+        <StatCard
+          label="Inventory Value"
+          value={inr(inventoryValue)}
+          icon={<Package className="h-4 w-4" />}
+          iconClass="bg-cyan-50 text-cyan-600"
+          accentClass="bg-cyan-500"
+          sub="Cost based stock value"
+          positive
+        />
       </div>
 
-      {/* ── Collection progress bar ── */}
-      <div className="bg-background rounded-xl border border-border/60 px-5 py-4">
-        <div className="flex items-center justify-between mb-2.5">
-          <span className="text-sm font-medium text-foreground">Collection rate</span>
-          <span className="text-sm font-semibold font-mono text-foreground">{collectionRate}%</span>
-        </div>
-        <div className="h-2 rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full bg-emerald-500 transition-all duration-700"
-            style={{ width: `${collectionRate}%` }}
-          />
-        </div>
-        <div className="flex justify-between mt-2">
-          <span className="text-xs text-muted-foreground">Collected: <span className="font-mono text-emerald-600 font-medium">{inr(totals.paid)}</span></span>
-          <span className="text-xs text-muted-foreground">Due: <span className="font-mono text-amber-600 font-medium">{inr(totals.due)}</span></span>
-        </div>
-      </div>
-
+    {/* ── Collection progress bar ── */}
+<div className="bg-background rounded-xl border border-border/60 px-5 py-4">
+  <div className="flex items-center justify-between mb-2.5">
+    <span className="text-sm font-medium text-foreground">Collection rate</span>
+    <span className="text-sm font-semibold font-mono text-foreground">{collectionRate}%</span>
+  </div>
+  <div className="h-2 rounded-full bg-muted overflow-hidden">
+    <div
+      className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+      style={{ width: `${collectionRate}%` }}
+    />
+  </div>
+</div>
       {/* ── Charts ── */}
-      <div className="bg-background rounded-xl border border-border/60 overflow-hidden">
-        {/* Chart toolbar */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">Sales &amp; Profit</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {range === "daily" ? "Last 30 days" : range === "monthly" ? "Last 12 months" : "Last 5 years"}
-            </p>
-          </div>
-          <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 border border-border/40">
-            {(["daily", "monthly", "yearly"] as Range[]).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all capitalize ${
-                  range === r
-                    ? "bg-background text-foreground shadow-sm border border-border/60"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
+<div className="bg-background rounded-xl border border-border/60 overflow-hidden">
 
-        <div className="px-5 py-5 space-y-6">
-          {/* Legend */}
-          <div className="flex items-center gap-5">
-            <span className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-              <span className="w-6 h-0.5 bg-blue-500 inline-block rounded" />
-              Sales
-            </span>
-            <span className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-              <span className="w-6 h-0.5 bg-emerald-500 inline-block rounded" />
-              Profit
-            </span>
-          </div>
+  {/* Toolbar */}
+  <div className="flex items-center justify-between px-5 py-4 border-b border-border/60">
+    <div>
+      <h2 className="text-sm font-semibold text-foreground">Sales & Profit</h2>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        {range === "daily" ? "Last 30 days" : range === "monthly" ? "Last 12 months" : "Last 5 years"}
+      </p>
+    </div>
 
-          {/* Line chart */}
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="hsl(var(--border))"
-                  strokeOpacity={0.5}
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={false}
-                  tickLine={false}
-                  dy={8}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => v >= 1000 ? `₹${Math.round(v / 1000)}k` : `₹${v}`}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ stroke: "hsl(var(--border))", strokeWidth: 1 }} />
-                <Line
-                  type="monotone"
-                  dataKey="sales"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#3b82f6", strokeWidth: 0 }}
-                  name="Sales"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="profit"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4, fill: "#10b981", strokeWidth: 0 }}
-                  name="Profit"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+    <div className="flex gap-1 bg-muted/50 rounded-lg p-1 border border-border/40">
+      {(["daily", "monthly", "yearly"] as Range[]).map((r) => (
+        <button
+          key={r}
+          onClick={() => setRange(r)}
+          className={`px-3 py-1.5 rounded-md text-xs ${
+            range === r ? "bg-background border" : "text-muted-foreground"
+          }`}
+        >
+          {r}
+        </button>
+      ))}
+    </div>
+  </div>
 
-          {/* Divider */}
-          <div className="border-t border-border/40" />
+  <div className="p-5 space-y-6">
 
-          {/* Bar chart */}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Profit breakdown
-            </p>
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} barSize={range === "daily" ? 6 : range === "monthly" ? 18 : 36}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="hsl(var(--border))"
-                    strokeOpacity={0.5}
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={false}
-                    tickLine={false}
-                    dy={8}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v) => v >= 1000 ? `₹${Math.round(v / 1000)}k` : `₹${v}`}
-                  />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }} />
-                  <ReferenceLine y={0} stroke="hsl(var(--border))" />
-                  <Bar
-                    dataKey="profit"
-                    fill="#10b981"
-                    radius={[4, 4, 0, 0]}
-                    name="Profit"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
+    {/* Line chart */}
+    <div className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="label" />
+          <YAxis />
+          <Tooltip content={<CustomTooltip />} />
+
+          <Line type="monotone" dataKey="sales" stroke="#3b82f6" name="Sales" />
+          <Line type="monotone" dataKey="profit" stroke="#10b981" name="Profit" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+
+    {/* Bar chart */}
+    <div className="h-52">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="label" />
+          <YAxis />
+          <Tooltip content={<CustomTooltip />} />
+          <ReferenceLine y={0} />
+
+          <Bar dataKey="profit" fill="#10b981" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+
+  </div>
+</div>
+
     </div>
   );
 }
@@ -356,6 +317,8 @@ interface StatCardProps {
   sub: string;
   positive: boolean;
 }
+
+
 
 function StatCard({ label, value, icon, iconClass, accentClass, sub, positive }: StatCardProps) {
   return (

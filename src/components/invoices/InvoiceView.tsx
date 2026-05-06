@@ -214,15 +214,15 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
             </tr>
 
             {/* ── GRAND TOTAL ── */}
-            <tr className="border-t-2 border-black font-bold bg-gray-50">
+            <tr className="border-t-2 border-b-2 border-black font-bold bg-gray-100">
               <td className="border-r border-black" />
-              <td className="border-r border-black px-1 py-1 text-right text-[10px]">Total</td>
+              <td className="border-r border-black px-1 py-2 text-right text-[11px] font-bold">TOTAL</td>
               <td className="border-r border-black" />
               {invoice.gst_enabled && <td className="border-r border-black" />}
-              <td className="border-r border-black px-1 py-1 text-right font-sans text-[10px]">{num(totalQty)}</td>
+              <td className="border-r border-black px-1 py-2 text-right font-sans text-[11px] font-bold">{num(totalQty)}</td>
               <td className="border-r border-black" />
               <td className="border-r border-black" />
-              <td className="px-1 py-1 text-right font-sans font-bold text-[10px]">{inr(finalRounded)}</td>
+              <td className="px-1 py-2 text-right font-sans font-bold text-[12px] border-l-2 border-black">{inr(finalRounded)}</td>
             </tr>
 
             {/* ── PAID AMOUNT ROW REMOVED ── */}
@@ -241,42 +241,46 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
         </div>
 
         {/* ── Bottom: Remarks + Bank + Signature ── */}
-        <div className="grid grid-cols-2 border-t-2 border-black">
-          <div className="p-2 border-r-2 border-black space-y-1">
+        <div className="grid grid-cols-2 border-t-2 border-black min-h-[160px]">
+          <div className="p-2 border-r-2 border-black space-y-1 flex flex-col justify-between">
             <div>
-              <span className="italic">Remarks:</span>{" "}
-              <span className="font-semibold uppercase">{invoice.customer_name}</span>
+              <div>
+                <span className="italic text-[10px]">Remarks:</span>{" "}
+                <span className="font-semibold uppercase text-[10px]">{invoice.customer_name}</span>
+              </div>
+              <div className="italic text-[10px] mt-1">Declaration</div>
+              <div className="text-[9px] leading-snug">
+                We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
+              </div>
             </div>
-            <div className="italic">Declaration</div>
-            <div className="text-[10px] leading-snug">
-              We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.
-            </div>
-            <div className="pt-10 text-[10px] border-t border-dashed border-black mt-6 inline-block px-4">
+            <div className="pt-4 text-[10px] border-t border-dashed border-black inline-block px-4">
               Customer's Signature
             </div>
           </div>
 
-          <div className="p-2 relative min-h-[140px]">
-            <div className="text-[10px]">Company's Bank Details</div>
-            <div className="grid grid-cols-[110px_1fr] gap-x-2 mt-1">
-              <div>A/c Holder's Name</div>
-              <div>: <span className="font-semibold uppercase">{business.bank_holder || business.business_name || "-"}</span></div>
-              <div>Bank Name</div>
-              <div>: <span className="font-semibold uppercase">{business.bank_name || "-"}</span></div>
-              <div>A/c No.</div>
-              <div>: <span className="font-semibold">{business.bank_account || "-"}</span></div>
-              <div>Branch & IFSC Code</div>
-              <div>: <span className="font-semibold uppercase">{[business.bank_branch, business.bank_ifsc].filter(Boolean).join(" & ") || "-"}</span></div>
+          <div className="p-2 relative flex flex-col justify-between">
+            <div>
+              <div className="text-[10px] font-semibold">Company's Bank Details</div>
+              <div className="grid grid-cols-[100px_1fr] gap-x-1 mt-1 text-[9px]">
+                <div>A/c Holder's Name</div>
+                <div>: <span className="font-semibold uppercase">{business.bank_holder || business.business_name || "-"}</span></div>
+                <div>Bank Name</div>
+                <div>: <span className="font-semibold uppercase">{business.bank_name || "-"}</span></div>
+                <div>A/c No.</div>
+                <div>: <span className="font-semibold">{business.bank_account || "-"}</span></div>
+                <div>Branch & IFSC</div>
+                <div>: <span className="font-semibold uppercase text-[8px]">{[business.bank_branch, business.bank_ifsc].filter(Boolean).join(" / ") || "-"}</span></div>
+              </div>
             </div>
 
-            <div className="absolute bottom-1 right-2 text-center">
+            <div className="text-center">
               {business.qr_code_url && (
                 <div className="mb-2">
                   <img
                     src={business.qr_code_url}
                     alt="QR Code"
                     crossOrigin="anonymous"
-                    className="h-14 w-14 object-contain ml-auto border border-black p-0.5"
+                    className="h-28 w-28 object-contain mx-auto border border-black p-1"
                   />
                 </div>
               )}
@@ -285,13 +289,13 @@ export const InvoiceView = forwardRef<HTMLDivElement, Props>(({ invoice, items, 
                   src={business.signature_url}
                   alt="Signature"
                   crossOrigin="anonymous"
-                  className="h-12 object-contain ml-auto"
+                  className="h-12 object-contain mx-auto"
                 />
               )}
-              <div className="border-t border-black pt-0.5 px-2 text-[10px]">
+              <div className="border-t border-black pt-0.5 px-2 text-[9px] mt-1">
                 for <span className="font-bold uppercase">{business.business_name || "Your Business"}</span>
               </div>
-              <div className="text-[10px] italic">Authorised Signatory</div>
+              <div className="text-[9px] italic">Authorised Signatory</div>
             </div>
           </div>
         </div>
@@ -328,15 +332,15 @@ function SummaryRow({
   value: string;
 }) {
   return (
-    <tr>
+    <tr className="border-b border-gray-300">
       <td className="border-r border-black" />
-      <td className="border-r border-black px-1 italic text-right">{label}</td>
+      <td className="border-r border-black px-1 py-1 italic text-right text-[10px]">{label}</td>
       <td className="border-r border-black" />
       {gstEnabled && <td className="border-r border-black" />}
       <td className="border-r border-black" />
       <td className="border-r border-black" />
       <td className="border-r border-black" />
-      <td className="px-1 text-right font-sans">{value}</td>
+      <td className="px-1 py-1 text-right font-sans text-[10px]">{value}</td>
     </tr>
   );
 }
