@@ -10,13 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, Save, Package, User, Receipt, ChevronDown } from "lucide-react";
+import { Loader2, Plus, Trash2, Save, Package, User, Receipt, ChevronDown, Barcode } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { invoiceSchema, type InvoiceFormValues } from "@/lib/schemas";
 import { computeItem, computeTotals, statusFor } from "@/lib/invoice-calc";
 import { inr, num } from "@/lib/format";
+import { BarcodeScanner } from "@/components/invoices/BarcodeScanner";
 
 interface ProductRow {
   id: string;
@@ -70,6 +71,7 @@ export default function NewInvoice() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
 
   const { data: products = [] } = useQuery({
     queryKey: ["products", user?.id, "for-invoice"],
@@ -132,6 +134,34 @@ export default function NewInvoice() {
       selling_price: Number(p.selling_price),
       gst_rate: Number(p.gst_rate ?? 18),
     });
+  };
+
+  const handleScannedProduct = (scannedItem: any) => {
+    // Check if product already in invoice
+    const existingIndex = items.findIndex(
+      (item) => item.product_id === scannedItem.product_id
+    );
+
+    if (existingIndex >= 0) {
+      // Increase quantity if already added
+      const currentQty = items[existingIndex].quantity || 1;
+      update(existingIndex, {
+        ...items[existingIndex],
+        quantity: currentQty + 1,
+      });
+      toast({ title: "Quantity updated", description: `${scannedItem.product_name} qty increased` });
+    } else {
+      // Add new item
+      append({
+        product_id: scannedItem.product_id,
+        product_name: scannedItem.product_name,
+        quantity: 1,
+        cost_price: Number(scannedItem.cost_price),
+        selling_price: Number(scannedItem.selling_price),
+        gst_rate: Number(scannedItem.gst_rate ?? 18),
+      });
+      toast({ title: "Product added", description: scannedItem.product_name });
+    }
   };
 
   const addCustom = () => {
@@ -311,6 +341,16 @@ export default function NewInvoice() {
               </SelectContent>
             </Select>
           </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setScannerOpen(true)}
+            className="h-9 rounded-lg text-sm gap-2"
+            title="Scan product barcode"
+          >
+            <Barcode className="h-3.5 w-3.5" />
+            Scan
+          </Button>
           <Button
             type="button"
             variant="outline"

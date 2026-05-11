@@ -1,15 +1,18 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useReactToPrint } from "react-to-print";
+
+import React, { useEffect, useRef, useState } from "react";
 import JsBarcode from "jsbarcode";
+
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+
 import { Button } from "@/components/ui/button";
+
 import {
   Select,
   SelectContent,
@@ -17,24 +20,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Loader2, Printer, Eye } from "lucide-react";
+
+import { Download, Eye } from "lucide-react";
 import { inr } from "@/lib/format";
+
+/* =========================================================
+   STICKER SIZES
+========================================================= */
 
 export interface StickerSize {
   id: string;
   name: string;
   width: number; // mm
   height: number; // mm
-  cols: number; // stickers per row on A4
 }
 
 const STICKER_SIZES: StickerSize[] = [
-  { id: "small", name: "Small (50×25mm)", width: 50, height: 25, cols: 4 },
-  { id: "medium", name: "Medium (75×50mm)", width: 75, height: 50, cols: 3 },
-  { id: "large", name: "Large (100×75mm)", width: 100, height: 75, cols: 2 },
+  {
+    id: "40x20",
+    name: "40 × 20 mm (Recommended)",
+    width: 40,
+    height: 20,
+  },
+  {
+    id: "50x25",
+    name: "50 × 25 mm (Retail Standard)",
+    width: 50,
+    height: 25,
+  },
+  {
+    id: "60x30",
+    name: "60 × 30 mm (Large)",
+    width: 60,
+    height: 30,
+  },
 ];
+
+/* =========================================================
+   TYPES
+========================================================= */
 
 interface StickerProduct {
   id: string;
@@ -52,9 +79,10 @@ interface ProductStickerDialogProps {
   quantity?: number;
 }
 
-/**
- * Individual sticker component for rendering with JsBarcode
- */
+/* =========================================================
+   SINGLE STICKER
+========================================================= */
+
 function Sticker({
   product,
   size,
@@ -62,66 +90,110 @@ function Sticker({
   product: StickerProduct;
   size: StickerSize;
 }) {
-  const barcodeRef = useRef<SVGSVGElement>(null);
-  const containerId = `barcode-${product.id}-${Math.random()}`;
+  // const barcodeRef = useRef<SVGSVGElement>(null);
+  const barcodeRef = useRef<HTMLCanvasElement>(null);
+
+  const isSmall = size.height <= 20;
 
   useEffect(() => {
-    if (!product.barcode || !barcodeRef.current) return;
-
-    try {
-      JsBarcode(barcodeRef.current, product.barcode, {
-        format: "CODE128",
-        width: 1.5,
-        height: 30,
-        margin: 2,
-        lineColor: "#000000",
-        background: "#ffffff",
-        displayValue: true,
-        fontSize: 10,
-      });
-    } catch (err) {
-      console.error("Barcode rendering error:", err);
+    if (barcodeRef.current && product.barcode) {
+      try {
+        JsBarcode(barcodeRef.current, product.barcode, {
+          format: "CODE128",
+          width: 1,
+          height: isSmall ? 10 : 14,
+          margin: 0,
+          displayValue: false,
+        });
+      } catch (error) {
+        console.error("Barcode error:", error);
+      }
     }
-  }, [product.barcode]);
+  }, [product.barcode, isSmall]);
 
   return (
     <div
-      className="flex flex-col items-center justify-center bg-white border-2 border-black rounded"
       style={{
         width: `${size.width}mm`,
         height: `${size.height}mm`,
-        padding: "2mm",
-        fontSize: `${Math.max(7, size.height / 12)}px`,
-        pageBreakInside: "avoid",
+        border: "1px solid #ef4444",
+        background: "#fff",
+
         boxSizing: "border-box",
+
+        display: "flex",
+        flexDirection: "column",
+
+        justifyContent: "space-between",
+        alignItems: "center",
+
+        overflow: "hidden",
+
+        padding: "1.2mm",
+
+        textAlign: "center",
       }}
     >
-      {/* Product Name */}
-      <div className="font-bold text-black text-center truncate w-full leading-tight mb-0.5">
-        {product.name.substring(0, 25)}
+      {/* PRODUCT NAME */}
+      <div
+        style={{
+          fontSize: isSmall ? "11px" : "14px",
+          fontWeight: 700,
+
+          lineHeight: 1,
+
+          width: "100%",
+
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {product.name}
       </div>
 
-      {/* Price */}
-      <div className="font-semibold text-black text-center mb-0.5">
-        {inr(product.selling_price)}
+      {/* PRICE */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          lineHeight: 1,
+        }}
+      >
+       
+        <span
+          style={{
+            fontSize: isSmall ? "11px" : "13px",
+            fontWeight: 700,
+          }}
+        >
+         MRP {inr(product.selling_price)}
+        </span>
+
+        
       </div>
 
-      {/* HSN Code */}
-      {product.hsn_code && (
-        <div className="text-black text-center text-[10px] mb-0.5">
+      {/* HSN */}
+      {!isSmall && product.hsn_code && (
+        <div
+          style={{
+            fontSize: "6px",
+            lineHeight: 1,
+          }}
+        >
           HSN: {product.hsn_code}
         </div>
       )}
 
-      {/* Barcode SVG */}
+      {/* BARCODE */}
       {product.barcode && (
-        <svg
+        <canvas
           ref={barcodeRef}
-          id={containerId}
           style={{
-            maxWidth: "95%",
-            maxHeight: "40%",
-            marginTop: "1mm",
+            width: "100%",
+            height: isSmall ? "10mm" : "14mm",
+            objectFit: "contain",
           }}
         />
       )}
@@ -129,40 +201,60 @@ function Sticker({
   );
 }
 
-/**
- * Sticker grid for printing (fits multiple stickers on A4)
- */
+/* =========================================================
+   STICKER GRID
+========================================================= */
+
 const StickerGrid = React.forwardRef<
   HTMLDivElement,
-  { products: StickerProduct[]; size: StickerSize }
+  {
+    products: StickerProduct[];
+    size: StickerSize;
+  }
 >(({ products, size }, ref) => {
-  const A4_WIDTH = 210; // mm
-  const A4_HEIGHT = 297; // mm
-  const MARGIN = 5; // mm
+  const A4_WIDTH = 210;
+  const A4_HEIGHT = 297;
 
-  const availableWidth = A4_WIDTH - MARGIN * 2;
-  const cols = size.cols;
-  const actualStickerWidth = availableWidth / cols;
-  const gap = (availableWidth - actualStickerWidth * cols) / (cols - 1);
+  const PAGE_PADDING = 5;
+
+  const usableWidth = A4_WIDTH - PAGE_PADDING * 2;
+
+  const cols = Math.floor(usableWidth / size.width);
 
   return (
     <div
       ref={ref}
-      className="bg-white p-5mm"
+      id="print-area"
       style={{
         width: `${A4_WIDTH}mm`,
         minHeight: `${A4_HEIGHT}mm`,
-        padding: `${MARGIN}mm`,
+
+        background: "#fff",
+
+        padding: `${PAGE_PADDING}mm`,
+
+        boxSizing: "border-box",
+
         display: "grid",
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gap: `${gap}mm`,
-        pageBreakInside: "avoid",
+
+        gridTemplateColumns: `repeat(${cols}, ${size.width}mm)`,
+
+        gridAutoRows: `${size.height}mm`,
+
+        justifyContent: "start",
+        alignContent: "start",
+
+        gap: "0mm",
+
+        overflow: "hidden",
       }}
     >
-      {products.map((product, idx) => (
-        <div key={`${product.id}-${idx}`} style={{ pageBreakInside: "avoid" }}>
-          <Sticker product={product} size={size} />
-        </div>
+      {products.map((product, index) => (
+        <Sticker
+          key={`${product.id}-${index}`}
+          product={product}
+          size={size}
+        />
       ))}
     </div>
   );
@@ -170,130 +262,228 @@ const StickerGrid = React.forwardRef<
 
 StickerGrid.displayName = "StickerGrid";
 
-/**
- * Dialog for generating and printing product stickers
- */
+/* =========================================================
+   MAIN COMPONENT
+========================================================= */
+
 export function ProductStickerDialog({
   open,
   onOpenChange,
   product,
   quantity = 1,
 }: ProductStickerDialogProps) {
-  const [selectedSize, setSelectedSize] = useState<StickerSize>(STICKER_SIZES[1]);
-  const [customQuantity, setCustomQuantity] = useState(quantity);
-  const [showPreview, setShowPreview] = useState(false);
+  const [selectedSize, setSelectedSize] =
+    useState<StickerSize>(STICKER_SIZES[0]);
+
+  const [customQuantity, setCustomQuantity] =
+    useState(quantity);
+
+  const [showPreview, setShowPreview] =
+    useState(false);
+
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = useReactToPrint({
-    content: () => gridRef.current,
-    documentTitle: `${product?.name || "Product"} Stickers`,
-    pageStyle: `
-      @page {
-        size: A4;
-        margin: 0mm;
-        padding: 0mm;
-      }
-      @media print {
-        * {
-          margin: 0 !important;
-          padding: 0 !important;
-          box-sizing: border-box !important;
-        }
-        body {
-          margin: 0;
-          padding: 0;
-          background: white;
-        }
-        html {
-          margin: 0;
-          padding: 0;
-        }
-      }
-    `,
-    onAfterPrint: () => {
-      console.log("Print completed successfully");
-    },
-  });
+  useEffect(() => {
+    if (open) {
+      setCustomQuantity(quantity);
+      setShowPreview(true);
+    }
+  }, [open, quantity]);
 
   if (!product) return null;
 
-  // Duplicate product for each quantity
-  const stickersToGenerate = Array(customQuantity).fill(product);
+  /* =========================================================
+     GENERATE PRODUCTS
+  ========================================================= */
+
+  const stickersToGenerate = Array.from(
+    { length: customQuantity },
+    () => product
+  );
+
+  /* =========================================================
+     PRINT / DOWNLOAD PDF
+  ========================================================= */
+
+  const handleDownloadPDF = () => {
+    const printContent =
+      document.getElementById("print-area");
+
+    if (!printContent) return;
+
+    const printWindow = window.open(
+      "",
+      "_blank",
+      "width=1000,height=800"
+    );
+
+    if (!printWindow) {
+      alert("Popup blocked!");
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Product Stickers</title>
+
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 0;
+            }
+
+            html,
+            body {
+              width: 210mm;
+              margin: 0;
+              padding: 0;
+              background: white;
+            }
+
+            * {
+              box-sizing: border-box;
+
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
+            #print-area {
+              width: 210mm;
+            }
+
+            svg {
+              width: 100%;
+              height: auto;
+              overflow: visible;
+            }
+          </style>
+        </head>
+
+        <body>
+          ${printContent.outerHTML}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 500);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-5xl rounded-xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Generate Product Stickers</DialogTitle>
+          <DialogTitle>
+            Generate Product Stickers
+          </DialogTitle>
+
           <DialogDescription>
-            Create printable stickers for {product.name}
+            Print professional barcode stickers for
+            <strong> {product.name}</strong>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Sticker Size Selection */}
+        <div className="space-y-5">
+          {/* SIZE */}
           <div className="space-y-2">
-            <Label htmlFor="size-select">Sticker Size</Label>
+            <Label>Sticker Size</Label>
+
             <Select
               value={selectedSize.id}
               onValueChange={(id) => {
-                const size = STICKER_SIZES.find((s) => s.id === id);
-                if (size) setSelectedSize(size);
+                const found = STICKER_SIZES.find(
+                  (s) => s.id === id
+                );
+
+                if (found) {
+                  setSelectedSize(found);
+                }
               }}
             >
-              <SelectTrigger id="size-select">
+              <SelectTrigger className="rounded-lg">
                 <SelectValue />
               </SelectTrigger>
+
               <SelectContent>
                 {STICKER_SIZES.map((size) => (
-                  <SelectItem key={size.id} value={size.id}>
-                    {size.name} ({size.cols} per row)
+                  <SelectItem
+                    key={size.id}
+                    value={size.id}
+                  >
+                    {size.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Quantity */}
+          {/* QUANTITY */}
           <div className="space-y-2">
-            <Label htmlFor="qty-input">Quantity of stickers</Label>
+            <Label>Sticker Quantity</Label>
+
             <Input
-              id="qty-input"
               type="number"
               min={1}
-              max={100}
+              max={5000}
               value={customQuantity}
-              onChange={(e) => setCustomQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="h-9"
+              onChange={(e) =>
+                setCustomQuantity(
+                  Math.max(
+                    1,
+                    parseInt(e.target.value) || 1
+                  )
+                )
+              }
+              className="font-mono"
             />
+
+            <p className="text-xs text-muted-foreground">
+              Total stickers: {customQuantity}
+            </p>
           </div>
 
-          {/* Preview */}
+          {/* PREVIEW */}
           {showPreview && (
-            <div className="border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto bg-gray-50">
-              <StickerGrid ref={gridRef} products={stickersToGenerate} size={selectedSize} />
+            <div className="border rounded-lg overflow-auto bg-muted/20 p-3">
+              <StickerGrid
+                ref={gridRef}
+                products={stickersToGenerate}
+                size={selectedSize}
+              />
             </div>
           )}
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="pt-4 gap-2">
+          {/* PREVIEW BUTTON */}
           <Button
             variant="outline"
-            onClick={() => setShowPreview(!showPreview)}
-            className="gap-2"
+            className="gap-2 rounded-lg"
+            onClick={() =>
+              setShowPreview(!showPreview)
+            }
           >
             <Eye className="h-4 w-4" />
-            {showPreview ? "Hide" : "Preview"}
+
+            {showPreview
+              ? "Hide Preview"
+              : "Show Preview"}
           </Button>
+
+          {/* DOWNLOAD BUTTON */}
           <Button
-            onClick={() => {
-              setShowPreview(true);
-              setTimeout(handlePrint, 100);
-            }}
-            className="gap-2"
+            onClick={handleDownloadPDF}
+            className="gap-2 rounded-lg"
           >
-            <Printer className="h-4 w-4" />
-            Print Stickers
+            <Download className="h-4 w-4" />
+
+            Download PDF
           </Button>
         </DialogFooter>
       </DialogContent>

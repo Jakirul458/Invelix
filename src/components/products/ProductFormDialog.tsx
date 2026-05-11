@@ -1,4 +1,4 @@
-import React, { useEffect, useId } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -10,16 +10,18 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, TrendingUp, TrendingDown, IndianRupee, Percent } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, IndianRupee, Percent, Barcode, RefreshCw, Eye } from "lucide-react";
 import { productSchema, type ProductFormValues } from "@/lib/schemas";
 import { inr } from "@/lib/format";
+import { generateUniqueBarcode, formatBarcodeForDisplay, logBarcodeAction } from "@/lib/barcode-utils";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  initial?: ProductFormValues & { id?: string };
+  initial?: ProductFormValues & { id?: string; barcode?: string | null };
   submitting: boolean;
-  onSubmit: (v: ProductFormValues) => Promise<void>;
+  onSubmit: (v: ProductFormValues & { barcode?: string | null }) => Promise<void>;
 }
 
 const GST_OPTIONS = [0, 5, 12, 18, 28];
@@ -36,6 +38,10 @@ function sellFromMargin(cost: number, pct: number): string {
 
 export function ProductFormDialog({ open, onOpenChange, initial, submitting, onSubmit }: Props) {
   const uid = useId();
+  const { user } = useAuthStore();
+  const [barcodeValue, setBarcodeValue] = useState<string | null>(null);
+  const [generatingBarcode, setGeneratingBarcode] = useState(false);
+  const [showBarcodePreview, setShowBarcodePreview] = useState(false);
 
   const {
     register, handleSubmit, watch, setValue, reset, control,
@@ -57,6 +63,8 @@ export function ProductFormDialog({ open, onOpenChange, initial, submitting, onS
       reset(initial ?? {
         name: "", hsn_code: "", stock_qty: 0, cost_price: 0, selling_price: 0, gst_rate: 18,
       });
+      setBarcodeValue(initial?.barcode || null);
+      setShowBarcodePreview(false);
     }
   }, [open, initial, reset]);
 
@@ -83,7 +91,31 @@ export function ProductFormDialog({ open, onOpenChange, initial, submitting, onS
   }
 
   async function onValid(values: ProductFormValues) {
-    await onSubmit(values);
+    try {
+      await onSubmit({ ...values, barcode: barcodeValue });
+      if (barcodeValue && initial?.id) {
+        await logBarcodeAction(initial.id, user!.id, barcodeValue, "regenerated");
+      } else if (barcodeValue && !initial?.id) {
+        // Will be logged in parent after product creation with ID
+      }
+    } catch (err) {
+      console.error("Form submission error:", err);
+      throw err;
+    }
+  }
+
+  async function handleGenerateBarcode() {
+    if (!user?.id) return;
+    
+    setGeneratingBarcode(true);
+    try {
+      const barcode = await generateUniqueBarcode(user.id);
+      setBarcodeValue(barcode);
+    } catch (err) {
+      console.error("Barcode generation failed:", err);
+    } finally {
+      setGeneratingBarcode(false);
+    }
   }
 
   return (
@@ -128,6 +160,66 @@ export function ProductFormDialog({ open, onOpenChange, initial, submitting, onS
                       className="h-9 text-sm rounded-lg font-mono"
                     />
                   </Field>
+                </div>
+              </div>
+            </Section>
+
+            {/* Barcode */}
+            <Section label="Barcode (Optional)">
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-3">
+                  <Field id={`${uid}-barcode`} label="Barcode">
+                    <div className="flex gap-2">
+                      <Input
+                        id={`${uid}-barcode`}
+                        placeholder="Auto-generated or manual"
+                        value={barcodeValue || ""}
+                        onChange={(e) => setBarcodeValue(e.target.value || null)}
+                        className="h-9 text-sm rounded-lg font-mono flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleGenerateBarcode}
+                        disabled={generatingBarcode}
+                        className="px-3"
+                      >
+                        {generatingBarcode ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </Field>
+
+                  {barcodeValue && (
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowBarcodePreview(!showBarcodePreview)}
+                        className="w-full justify-center gap-2"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        {showBarcodePreview ? "Hide" : "Show"} Barcode Preview
+                      </Button>
+
+                      {showBarcodePreview && (
+                        <div className="flex flex-col items-center gap-2 p-3 bg-white rounded border border-dashed border-border">
+                          <Barcode className="h-6 w-6 text-muted-foreground" />
+                          <div className="font-mono text-sm font-semibold">
+                            {formatBarcodeForDisplay(barcodeValue)}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            EAN-13 Barcode
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </Section>
