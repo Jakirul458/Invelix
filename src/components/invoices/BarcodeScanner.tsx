@@ -114,6 +114,7 @@ export function BarcodeScanner({
               cost_price: product.cost_price,
               gst_rate: product.gst_rate,
               hsn_code: product.hsn_code,
+              barcode: product.barcode,
               stock_qty: product.stock_qty,
             });
             setBarcodeInput("");
@@ -188,6 +189,9 @@ export function BarcodeScanner({
     };
   }, [open, stopCamera]);
 
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md w-full max-h-[90vh] overflow-y-auto sm:max-h-screen sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Barcode className="h-5 w-5" />

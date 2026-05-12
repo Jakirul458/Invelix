@@ -16,7 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 
 const items = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, end: true },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, end: true },
   { title: "Products", url: "/products", icon: Package },
   { title: "Invoices", url: "/invoices", icon: FileText },
   { title: "New Invoice", url: "/invoices/new", icon: Plus },

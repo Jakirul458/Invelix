@@ -35,6 +35,8 @@ export const invoiceItemSchema = z.object({
   cost_price: z.coerce.number().min(0),
   selling_price: z.coerce.number().min(0),
   gst_rate: z.coerce.number().min(0).max(50),
+  hsn_code: z.string().trim().max(20).optional().or(z.literal("")).nullable(),
+  barcode: z.string().trim().max(100).optional().or(z.literal("")).nullable(),
 });
 export type InvoiceItemFormValues = z.infer<typeof invoiceItemSchema>;
 

@@ -29,6 +29,6 @@ export const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
   const { session, role, loading } = useAuthStore();
   if (loading) return <FullScreenLoader />;
   if (!session) return <Navigate to="/admin/login" replace />;
-  if (role !== "admin") return <Navigate to="/" replace />;
+  if (role !== "admin") return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 };

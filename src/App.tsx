@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { RequireAuth, RequireOwner, RequireAdmin } from "@/components/RouteGuards";
 import AppLayout from "@/layouts/AppLayout";
+import Home from "@/pages/Home";
+import Contact from "@/pages/Contact";
 import Auth from "@/pages/Auth";
 import ResetPassword from "@/pages/ResetPassword";
 import AdminLogin from "@/pages/AdminLogin";
@@ -31,6 +33,11 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* Public Pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/contact" element={<Contact />} />
+            
+            {/* Auth Routes */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -42,7 +49,7 @@ const App = () => (
 
             {/* Owner app */}
             <Route element={<RequireOwner><AppLayout /></RequireOwner>}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/invoices/new" element={<NewInvoice />} />

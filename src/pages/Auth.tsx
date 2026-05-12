@@ -480,7 +480,7 @@ export default function Auth() {
   };
 
   if (loading) return null;
-  if (session) return <Navigate to="/" replace />;
+  if (session) return <Navigate to="/dashboard" replace />;
 
   const onSubmit = async (values: FormData) => {
     setSubmitting(true);
@@ -569,7 +569,7 @@ export default function Auth() {
           }
         }
         toast({ title: "🚀 Welcome back!", description: "Let's get to work!" });
-        navigate("/");
+        navigate("/dashboard");
       }
     } catch (e) {
       toast({ title: "Authentication error", description: e.message, variant: "destructive" });

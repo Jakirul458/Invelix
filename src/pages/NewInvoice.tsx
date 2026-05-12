@@ -26,6 +26,8 @@ interface ProductRow {
   cost_price: number;
   selling_price: number;
   gst_rate: number | null;
+  barcode?: string | null;
+  hsn_code?: string | null;
 }
 
 function Section({
@@ -79,7 +81,7 @@ export default function NewInvoice() {
     queryFn: async (): Promise<ProductRow[]> => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, stock_qty, cost_price, selling_price, gst_rate")
+        .select("id, name, stock_qty, cost_price, selling_price, gst_rate, barcode, hsn_code")
         .order("name", { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -133,6 +135,8 @@ export default function NewInvoice() {
       cost_price: Number(p.cost_price),
       selling_price: Number(p.selling_price),
       gst_rate: Number(p.gst_rate ?? 18),
+      hsn_code: p.hsn_code || null,
+      barcode: p.barcode || null,
     });
   };
 
@@ -157,6 +161,8 @@ export default function NewInvoice() {
         product_name: scannedItem.product_name,
         quantity: 1,
         cost_price: Number(scannedItem.cost_price),
+        hsn_code: scannedItem.hsn_code || null,
+        barcode: scannedItem.product_barcode || scannedItem.barcode || null,
         selling_price: Number(scannedItem.selling_price),
         gst_rate: Number(scannedItem.gst_rate ?? 18),
       });
