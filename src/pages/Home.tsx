@@ -3,6 +3,7 @@
     import { Button } from "@/components/ui/button";
     import Header from "@/components/Header";
     import Footer from "@/components/Footer";
+    import FAQ from "@/components/ui/FAQ";
     import { useEffect, useRef } from "react";
 
     export default function Home() {
@@ -238,6 +239,9 @@
                             </Button>
                         </div>
                     </section>
+
+                    {/* FAQ Section */}
+                    <FAQ />
 
                     {/* Footer */}
                     <footer className="border-t border-cyan-400/20 bg-black/50 mt-auto">

@@ -17,12 +17,11 @@ const Contact = () => {
     message: ""
   });
   useEffect(() => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-  
-}, []);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -136,7 +135,7 @@ const Contact = () => {
       // For now, we'll just show success (you can integrate with your backend)
       // Example: send to your backend API
       
-      setSuccess("Your message has been sent successfully! We'll get back to you within 24-48 hours.");
+      setSuccess("Message sent! We'll reply within 24-48 hours.");
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
       
       // Clear success message after 5 seconds
@@ -166,11 +165,10 @@ const Contact = () => {
     { 
       icon: MapPin, 
       title: "Address", 
-      detail: "kolkata, India", 
+      detail: "Kolkata, India", 
       href: "#",
       color: "text-purple-400" 
     }
-    
   ];
 
   return (
@@ -195,106 +193,106 @@ const Contact = () => {
       {/* Content */}
       <div className="relative z-10">
         <Header />
-        <main className="pt-24 pb-16 flex-1">
+        <main className="pt-20 pb-8 flex-1">
           <div className="container mx-auto px-4">
-            {/* Page Header */}
-            <div className="text-center mb-16">
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            {/* Page Header - Reduced spacing */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-5xl font-bold mb-3">
                 <span className="text-white">Get In</span>{" "}
                 <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,255,255,0.6)]">
                   Touch
                 </span>
               </h1>
-              <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-                Have a question, suggestion, or want to collaborate? We'd love to hear from you!
+              <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto">
+                Have a question or want to collaborate? We'd love to hear from you!
               </p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-              {/* Contact Form */}
-              <Card className="bg-black/25 backdrop-blur-2xl border border-cyan-400/20 transform transition-all duration-500 hover:scale-105">
-                <CardContent className="p-8">
-                  <div className="flex items-center space-x-3 mb-8">
-                    <MessageCircle className="h-8 w-8 text-cyan-400" />
-                    <h2 className="text-2xl font-bold text-white">Send us a message</h2>
+            <div className="grid lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+              {/* Contact Form - Reduced padding and spacing */}
+              <Card className="bg-black/25 backdrop-blur-2xl border border-cyan-400/20 transform transition-all duration-500 hover:scale-[1.02]">
+                <CardContent className="p-5">
+                  <div className="flex items-center space-x-2 mb-5">
+                    <MessageCircle className="h-6 w-6 text-cyan-400" />
+                    <h2 className="text-xl font-bold text-white">Send us a message</h2>
                   </div>
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Name *</label>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Name *</label>
                         <Input
                           type="text"
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
                           placeholder="Your full name"
-                          className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20"
+                          className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 h-9 text-sm"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-300 mb-2">Email *</label>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Email *</label>
                         <Input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleInputChange}
                           placeholder="your.email@example.com"
-                          className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20"
+                          className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 h-9 text-sm"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Phone</label>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Phone</label>
                       <Input
                         type="tel"
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="+91 9876543210"
-                        className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20"
+                        className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 h-9 text-sm"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Subject *</label>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Subject *</label>
                       <Input
                         type="text"
                         name="subject"
                         value={formData.subject}
                         onChange={handleInputChange}
                         placeholder="What's this about?"
-                        className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20"
+                        className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 h-9 text-sm"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-300 mb-2">Message *</label>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Message *</label>
                       <Textarea
                         name="message"
                         value={formData.message}
                         onChange={handleInputChange}
                         placeholder="Tell us more about your inquiry..."
-                        rows={6}
-                        className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 resize-none"
+                        rows={4}
+                        className="bg-slate-900/50 border-cyan-400/20 text-white placeholder:text-slate-500 focus:border-cyan-400 focus:ring-cyan-400/20 resize-none text-sm"
                         required
                       />
                     </div>
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 font-semibold py-2 transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50"
+                      className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0 font-semibold h-10 transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50"
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Sending...
                         </>
                       ) : (
                         <>
-                          <Send className="mr-2 h-5 w-5" />
+                          <Send className="mr-2 h-4 w-4" />
                           Send Message
                         </>
                       )}
@@ -302,12 +300,12 @@ const Contact = () => {
 
                     {/* Success / Error messages */}
                     {success && (
-                      <div className="p-4 bg-green-500/20 border border-green-500/50 rounded-lg text-green-300 text-center text-sm">
+                      <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-lg text-green-300 text-center text-xs">
                         {success}
                       </div>
                     )}
                     {error && (
-                      <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-center text-sm">
+                      <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-300 text-center text-xs">
                         {error}
                       </div>
                     )}
@@ -315,28 +313,28 @@ const Contact = () => {
                 </CardContent>
               </Card>
 
-              {/* Contact Info */}
-              <div className="space-y-8">
-                <Card className="bg-black/25 backdrop-blur-2xl border border-cyan-400/20 transform transition-all duration-500 hover:scale-105">
-                  <CardContent className="p-8">
-                    <h2 className="text-2xl font-bold text-white mb-8">Contact Information</h2>
-                    <div className="space-y-6">
+              {/* Contact Info - Reduced padding and spacing */}
+              <div className="space-y-6">
+                <Card className="bg-black/25 backdrop-blur-2xl border border-cyan-400/20 transform transition-all duration-500 hover:scale-[1.02]">
+                  <CardContent className="p-5">
+                    <h2 className="text-xl font-bold text-white mb-5">Contact Information</h2>
+                    <div className="space-y-4">
                       {contactInfo.map((info, index) => {
                         const Icon = info.icon;
                         return (
                           <a
                             key={index}
                             href={info.href}
-                            className="flex items-start space-x-4 group transform transition-all duration-300 hover:translate-x-2"
+                            className="flex items-start space-x-3 group transform transition-all duration-300 hover:translate-x-2"
                           >
                             <div
-                              className={`w-12 h-12 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0 ${info.color} group-hover:scale-110 transition-transform duration-300`}
+                              className={`w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0 ${info.color} group-hover:scale-110 transition-transform duration-300`}
                             >
-                              <Icon className="h-6 w-6" />
+                              <Icon className="h-5 w-5" />
                             </div>
                             <div>
-                              <h3 className="font-semibold text-white mb-1">{info.title}</h3>
-                              <p className="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">
+                              <h3 className="font-semibold text-white mb-0.5 text-sm">{info.title}</h3>
+                              <p className="text-slate-400 text-xs group-hover:text-slate-300 transition-colors">
                                 {info.detail}
                               </p>
                             </div>
@@ -347,11 +345,11 @@ const Contact = () => {
                   </CardContent>
                 </Card>
 
-                {/* Response Time Notice */}
+                {/* Response Time Notice - Reduced padding */}
                 <Card className="bg-black/25 backdrop-blur-2xl border border-cyan-400/20">
-                  <CardContent className="p-6">
-                    <p className="text-slate-300 text-sm">
-                      <strong className="text-cyan-400">Response Time:</strong> We typically respond to all inquiries within <strong>24-48 hours</strong>. For urgent matters, please mention "URGENT" in your subject line.
+                  <CardContent className="p-4">
+                    <p className="text-slate-300 text-xs">
+                      <strong className="text-cyan-400">Response Time:</strong> We typically respond within <strong>24-48 hours</strong>. For urgent matters, mention "URGENT" in your subject.
                     </p>
                   </CardContent>
                 </Card>
@@ -362,7 +360,7 @@ const Contact = () => {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 bg-black/50 border-t border-slate-700">
+      <footer className="relative z-10 bg-black/50 border-t border-slate-700 mt-auto">
         <Footer />
       </footer>
     </div>
