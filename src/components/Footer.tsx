@@ -83,6 +83,15 @@ export default function Footer() {
                 </button>
               </li>
 
+              <li>
+                <button
+                  onClick={() => navigate("/terms-of-use")}
+                  className="text-slate-400 hover:text-cyan-400 transition-colors"
+                >
+                  Terms of Use
+                </button>
+              </li>
+
               {/* <li>
                 <button
                   onClick={() => navigate("/auth")}

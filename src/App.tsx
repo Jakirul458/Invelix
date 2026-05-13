@@ -21,6 +21,7 @@ import Invoices from "@/pages/Invoices";
 import NewInvoice from "@/pages/NewInvoice";
 import InvoiceDetail from "@/pages/InvoiceDetail";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import TermsOfUse from "@/pages/TermsOfUse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             {/* Public Pages */}
             <Route path="/" element={<Home />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
             
             {/* Auth Routes */}
             <Route path="/auth" element={<Auth />} />

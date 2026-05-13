@@ -139,7 +139,7 @@ export default function AdminDashboard() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate("/admin/login");
+    navigate("/");
   };
 
   return (

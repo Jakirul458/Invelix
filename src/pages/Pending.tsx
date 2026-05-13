@@ -11,7 +11,7 @@ export default function Pending() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   return (

@@ -14,9 +14,12 @@ async function loadProfile(userId: string): Promise<{ role: Role | null; isActiv
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { setAuth, reset, setLoading } = useAuthStore();
+  const { setAuth, reset, setLoading, clearExpiredSession } = useAuthStore();
 
   useEffect(() => {
+    // Check for expired session first (date change or 24 hours passed)
+    clearExpiredSession();
+
     // Listener FIRST
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
@@ -43,8 +46,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
     });
 
-    return () => sub.subscription.unsubscribe();
-  }, [setAuth, reset, setLoading]);
+    // Check for date change every minute and auto-logout if needed
+    const checkExpireInterval = setInterval(() => {
+      clearExpiredSession();
+    }, 60000); // Check every minute
+
+    return () => {
+      sub.subscription.unsubscribe();
+      clearInterval(checkExpireInterval);
+    };
+  }, [setAuth, reset, setLoading, clearExpiredSession]);
 
   return <>{children}</>;
 };
