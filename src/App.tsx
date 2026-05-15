@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { RequireAuth, RequireOwner, RequireAdmin } from "@/components/RouteGuards";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import AppLayout from "@/layouts/AppLayout";
 import Home from "@/pages/Home";
 import Contact from "@/pages/Contact";
@@ -22,6 +23,10 @@ import NewInvoice from "@/pages/NewInvoice";
 import InvoiceDetail from "@/pages/InvoiceDetail";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import TermsOfUse from "@/pages/TermsOfUse";
+import Privacy from "@/pages/Privacy";
+import WhereYouCanUse from "@/pages/WhereYouCanUse";
+import About from "@/pages/About";
+import Subscribe from "@/pages/Subscribe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +42,10 @@ const App = () => (
             {/* Public Pages */}
             <Route path="/" element={<Home />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
             <Route path="/terms-of-use" element={<TermsOfUse />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/where-you-can-use" element={<WhereYouCanUse />} />
             
             {/* Auth Routes */}
             <Route path="/auth" element={<Auth />} />
@@ -46,11 +54,14 @@ const App = () => (
             <Route path="/admin/reset-password" element={<AdminResetPassword />} />
             <Route path="/pending" element={<RequireAuth><Pending /></RequireAuth>} />
 
+            {/* Subscription/Payment Routes */}
+            <Route path="/subscribe" element={<RequireAuth><Subscribe /></RequireAuth>} />
+
             {/* Admin */}
             <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
 
-            {/* Owner app */}
-            <Route element={<RequireOwner><AppLayout /></RequireOwner>}>
+            {/* Owner app - Protected by subscription status */}
+            <Route element={<RequireOwner><ProtectedRoute><AppLayout /></ProtectedRoute></RequireOwner>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
               <Route path="/invoices" element={<Invoices />} />

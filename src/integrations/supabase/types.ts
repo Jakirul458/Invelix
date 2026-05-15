@@ -270,6 +270,98 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          id: string
+          full_name: string
+          email: string
+          phone: string
+          role: Database["public"]["Enums"]["app_role"]
+          account_status: string
+          subscription_status: string
+          trial_start_date: string | null
+          trial_end_date: string | null
+          subscription_expires_at: string | null
+          trial_popup_acknowledged: boolean
+          created_at: string
+        }
+        Insert: {
+          id: string
+          full_name?: string
+          email: string
+          phone?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          account_status?: string
+          subscription_status?: string
+          trial_start_date?: string | null
+          trial_end_date?: string | null
+          subscription_expires_at?: string | null
+          trial_popup_acknowledged?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string
+          email?: string
+          phone?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          account_status?: string
+          subscription_status?: string
+          trial_start_date?: string | null
+          trial_end_date?: string | null
+          subscription_expires_at?: string | null
+          trial_popup_acknowledged?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          order_id: string
+          payment_id: string | null
+          amount: number
+          payment_status: string
+          current_period_start: string | null
+          current_period_end: string | null
+          is_first_purchase: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          order_id: string
+          payment_id?: string | null
+          amount: number
+          payment_status?: string
+          current_period_start?: string | null
+          current_period_end?: string | null
+          is_first_purchase?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          order_id?: string
+          payment_id?: string | null
+          amount?: number
+          payment_status?: string
+          current_period_start?: string | null
+          current_period_end?: string | null
+          is_first_purchase?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

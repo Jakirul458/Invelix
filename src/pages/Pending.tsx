@@ -20,10 +20,10 @@ export default function Pending() {
         <div className="h-14 w-14 mx-auto rounded-full bg-warning/15 grid place-items-center mb-5">
           <Clock className="h-6 w-6 text-warning" />
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight mb-2">Account pending activation</h1>
+        <h1 className="text-2xl font-semibold tracking-tight mb-2">Account not active</h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Your account <span className="font-medium text-foreground">{user?.email}</span> has been created.
-          An administrator needs to activate it before you can access the dashboard.
+          Your account <span className="font-medium text-foreground">{user?.email}</span> is not active.
+          Contact support or an administrator if you need help.
         </p>
         <Button variant="outline" onClick={signOut}>
           Sign out

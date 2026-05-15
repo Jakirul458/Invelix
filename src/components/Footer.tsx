@@ -15,12 +15,12 @@ export default function Footer() {
   };
 
   const scrollToAbout = () => {
-    navigate("/");
+    navigate("/about");
 
-    setTimeout(() => {
-      const element = document.getElementById("about");
-      element?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const goToContact = () => {
@@ -92,12 +92,21 @@ export default function Footer() {
                 </button>
               </li>
 
-              {/* <li>
+              <li>
                 <button
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate("/privacy")}
                   className="text-slate-400 hover:text-cyan-400 transition-colors"
                 >
-                  Sign In
+                  Privacy Policy
+                </button>
+              </li>
+
+              {/* <li>
+                <button
+                  onClick={() => navigate("/where-you-can-use")}
+                  className="text-slate-400 hover:text-cyan-400 transition-colors"
+                >
+                  Where You Can Use
                 </button>
               </li> */}
             </ul>

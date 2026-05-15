@@ -15,13 +15,11 @@ export default function Header() {
   };
 
   const scrollToAbout = () => {
-    navigate("/");
-
-    setTimeout(() => {
-      const element = document.getElementById("about");
-      element?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
-
+    navigate("/about");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
     setMobileMenuOpen(false);
   };
 

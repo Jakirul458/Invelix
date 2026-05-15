@@ -3,14 +3,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore, type Role } from "@/lib/auth-store";
 
 async function loadProfile(userId: string): Promise<{ role: Role | null; isActive: boolean }> {
-  const [{ data: roleRow }, { data: ownerRow }] = await Promise.all([
+  const [{ data: roleRow }, { data: ownerRow }, { data: profileRow }] = await Promise.all([
     supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
     supabase.from("owners").select("is_active").eq("id", userId).maybeSingle(),
+    supabase.from("profiles").select("account_status").eq("id", userId).maybeSingle(),
   ]);
-  return {
-    role: (roleRow?.role as Role) ?? null,
-    isActive: ownerRow?.is_active ?? false,
-  };
+
+  const role = (roleRow?.role as Role) ?? null;
+  const ownerActive = ownerRow?.is_active ?? false;
+  const profileActive = profileRow?.account_status === "active";
+
+  // Legacy: before profiles migration, treat owner row as sole gate
+  const isActive =
+    role === "admin"
+      ? true
+      : profileRow == null
+        ? ownerActive
+        : ownerActive && profileActive;
+
+  return { role, isActive };
 }
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
