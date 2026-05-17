@@ -34,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Profile } from "@/types/subscription";
+import { deleteUserAsAdmin } from "@/lib/admin-api";
 
 type OwnerProfile = Profile;
 
@@ -173,9 +174,9 @@ export default function AdminDashboard() {
   };
 
   const deleteUser = async (user: OwnerProfile) => {
-    const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-    if (authError && !authError.message.includes("not found")) {
-      toast({ title: "Delete failed", description: authError.message, variant: "destructive" });
+    const result = await deleteUserAsAdmin(user.id);
+    if (!result.success) {
+      toast({ title: "Delete failed", description: result.error ?? "Could not delete user", variant: "destructive" });
       return;
     }
 

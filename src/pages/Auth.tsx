@@ -256,33 +256,49 @@ export default function Auth() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.toLowerCase().includes("rate limit")) {
+          throw new Error(
+            "Too many signup attempts. Wait 30–60 minutes, use a different email, or disable email confirmation in Supabase Auth settings for development."
+          );
+        }
+        throw error;
+      }
 
       if (!data.user?.id) {
         throw new Error("Failed to create user account");
       }
 
-      const { error: ownerPhoneError } = await supabase.from("owners").update({ phone: values.phone }).eq("id", data.user.id);
+      const { error: ownerPhoneError } = await supabase
+        .from("owners")
+        .update({ phone: values.phone })
+        .eq("id", data.user.id);
       if (ownerPhoneError) {
         console.warn("Owner phone update:", ownerPhoneError.message);
       }
 
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      let session = data.session;
 
-      if (signInError || !signInData.session) {
-        toast({
-          title: "Account created",
-          description: "Please confirm your email if required, then sign in.",
+      if (!session) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: values.email,
+          password: values.password,
         });
-        setMode("signin");
-        return;
+
+        if (signInError || !signInData.session) {
+          toast({
+            title: "Account created",
+            description:
+              "Check your email to confirm your account, then sign in. If you did not get an email, ask your admin to disable “Confirm email” in Supabase.",
+          });
+          setMode("signin");
+          return;
+        }
+        session = signInData.session;
       }
 
       setNewUserFullName(values.full_name);
-      setTrialAckUserId(signInData.session.user.id);
+      setTrialAckUserId(session.user.id);
       setShowTrialPopup(true);
       toast({
         title: "Welcome aboard!",
@@ -407,15 +423,31 @@ export default function Auth() {
                 <Label htmlFor="full_name" className="text-cyan-100 font-medium">
                   Full name
                 </Label>
+                {/* <Input id="full_name" 
+                type="text" 
+                placeholder="Your full name" 
+                autoComplete="name" 
+                aria-invalid={!!signupForm.formState.errors.full_name} 
+                className={cn(signupForm.formState.errors.full_name && "border-destructive focus-visible:ring-destructive")} 
+                {...signupForm.register("full_name")} 
+                /> */}
                 <Input
-                  id="full_name"
-                  type="text"
-                  placeholder="Your full name"
-                  autoComplete="name"
-                  aria-invalid={!!signupForm.formState.errors.full_name}
-                  className={cn(signupForm.formState.errors.full_name && "border-destructive focus-visible:ring-destructive")}
-                  {...signupForm.register("full_name")}
-                />
+  id="full_name"
+  type="text"
+  placeholder="Your full name"
+  autoComplete="name"
+  aria-invalid={!!signupForm.formState.errors.full_name}
+  className={cn(
+    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
+    
+    // browser autofill fix
+    "autofill:bg-black autofill:text-white",
+
+    signupForm.formState.errors.full_name &&
+      "border-destructive focus-visible:ring-destructive"
+  )}
+  {...signupForm.register("full_name")}
+/>
                 {signupForm.formState.errors.full_name && (
                   <p className="text-xs text-destructive">{signupForm.formState.errors.full_name.message}</p>
                 )}
@@ -426,7 +458,7 @@ export default function Auth() {
               <Label htmlFor="email" className="text-cyan-100 font-medium">
                 Email address
               </Label>
-              <Input
+              {/* <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
@@ -434,7 +466,25 @@ export default function Auth() {
                 aria-invalid={!!emailErr}
                 className={cn(emailErr && "border-destructive focus-visible:ring-destructive")}
                 {...(isSignin ? signinForm.register("email") : signupForm.register("email"))}
-              />
+              /> */}
+              <Input
+  id="email"
+  type="email"
+  placeholder="Enter your email"
+  autoComplete="email"
+  aria-invalid={!!emailErr}
+  className={cn(
+    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
+    
+    // autofill fix
+    "[-webkit-autofill]:shadow-[0_0_0px_1000px_rgba(0,0,0,1)_inset] [-webkit-autofill]:[-webkit-text-fill-color:white]",
+
+    emailErr && "border-destructive focus-visible:ring-destructive"
+  )}
+  {...(isSignin
+    ? signinForm.register("email")
+    : signupForm.register("email"))}
+/>
               {emailErr && <p className="text-xs text-destructive">{emailErr.message}</p>}
             </div>
 
@@ -443,16 +493,34 @@ export default function Auth() {
                 <Label htmlFor="phone" className="text-cyan-100 font-medium">
                   Phone number
                 </Label>
-                <Input
+                {/* <Input
                   id="phone"
                   type="tel"
                   inputMode="numeric"
                   placeholder="10-digit mobile number"
                   autoComplete="tel"
                   aria-invalid={!!signupForm.formState.errors.phone}
-                  className={cn(signupForm.formState.errors.phone && "border-destructive focus-visible:ring-destructive")}
+                  className={cn (signupForm.formState.errors.phone && "border-destructive focus-visible:ring-destructive")}
                   {...signupForm.register("phone")}
-                />
+                /> */}
+                <Input
+  id="phone"
+  type="tel"
+  inputMode="numeric"
+  placeholder="10-digit mobile number"
+  autoComplete="tel"
+  aria-invalid={!!signupForm.formState.errors.phone}
+  className={cn(
+    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
+
+    // autofill fix
+    "[-webkit-autofill]:shadow-[0_0_0px_1000px_rgba(0,0,0,1)_inset] [-webkit-autofill]:[-webkit-text-fill-color:white]",
+
+    signupForm.formState.errors.phone &&
+      "border-destructive focus-visible:ring-destructive"
+  )}
+  {...signupForm.register("phone")}
+/>
                 {signupForm.formState.errors.phone && (
                   <p className="text-xs text-destructive">{signupForm.formState.errors.phone.message}</p>
                 )}
@@ -460,7 +528,7 @@ export default function Auth() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-cyan-100 font-medium">
+              <Label htmlFor="password" className="text-gray-100 font-medium">
                 {isSignin ? "Password" : "Set your login password"}
               </Label>
               <div className="relative">
@@ -471,7 +539,7 @@ export default function Auth() {
                   autoComplete={isSignin ? "current-password" : "new-password"}
                   aria-invalid={!!passwordErr}
                   className={cn(
-                    "pr-10",
+                    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400",
                     passwordErr && "border-destructive focus-visible:ring-destructive"
                   )}
                   {...(isSignin ? signinForm.register("password") : signupForm.register("password"))}
@@ -514,20 +582,42 @@ export default function Auth() {
 
           <div className="mt-7 text-center text-sm text-muted-foreground">
             {isSignin ? (
+              // <>
+              //   Don&apos;t have an account?{" "}
+              //   <button
+              //     type="button"
+              //     onClick={() => {
+              //       setMode("signup");
+              //       signupForm.reset();
+              //       setTrialAckUserId(null);
+              //     }}
+              //     className="text-primary font-medium hover:underline"
+              //   >
+              //     Create your business account
+              //   </button>
+              // </>
               <>
-                Don&apos;t have an account?{" "}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("signup");
-                    signupForm.reset();
-                    setTrialAckUserId(null);
-                  }}
-                  className="text-primary font-medium hover:underline"
-                >
-                  Create your business account
-                </button>
-              </>
+  <div className="text-sm text-muted-foreground">
+    Don&apos;t have an account?
+  </div>
+
+  <button
+    type="button"
+    onClick={() => {
+      setMode("signup");
+      signupForm.reset();
+      setTrialAckUserId(null);
+    }}
+    className="
+    text-primary
+    text-2xl
+  font-bold
+    hover:underline      
+    "
+  >
+    Create your business account
+  </button>
+</>
             ) : (
               <>
                 Already have one?{" "}
