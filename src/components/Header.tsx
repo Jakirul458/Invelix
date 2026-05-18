@@ -44,6 +44,24 @@ export default function Header() {
   setMobileMenuOpen(false);
 };
 
+  const scrollToUserManual = () => {
+    navigate("/user-manual");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+    setMobileMenuOpen(false);
+  };
+
+  const scrollToDocumentation = () => {
+    navigate("/documentation");
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+    setMobileMenuOpen(false);
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 border-b border-slate-700 bg-slate-900/50 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -80,6 +98,20 @@ export default function Header() {
               className="text-slate-300 hover:text-cyan-400 transition-colors duration-300 text-sm font-medium"
             >
               About
+            </button>
+
+            <button
+              onClick={scrollToUserManual}
+              className="text-slate-300 hover:text-cyan-400 transition-colors duration-300 text-sm font-medium"
+            >
+              User Manual
+            </button>
+
+            <button
+              onClick={scrollToDocumentation}
+              className="text-slate-300 hover:text-cyan-400 transition-colors duration-300 text-sm font-medium"
+            >
+              Documentation
             </button>
 
             <button
@@ -127,6 +159,20 @@ export default function Header() {
               className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors text-sm font-medium"
             >
               About
+            </button>
+
+            <button
+              onClick={scrollToUserManual}
+              className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors text-sm font-medium"
+            >
+              User Manual
+            </button>
+
+            <button
+              onClick={scrollToDocumentation}
+              className="block w-full text-left px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors text-sm font-medium"
+            >
+              Documentation
             </button>
 
             <button

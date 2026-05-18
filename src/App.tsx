@@ -27,6 +27,8 @@ import Privacy from "@/pages/Privacy";
 import WhereYouCanUse from "@/pages/WhereYouCanUse";
 import About from "@/pages/About";
 import Subscribe from "@/pages/Subscribe";
+import UserManual from "@/pages/UserManual";
+import Documentation from "@/pages/Documentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/about" element={<About />} />
+            <Route path="/user-manual" element={<UserManual />} />
+            <Route path="/documentation" element={<Documentation />} />
             <Route path="/terms-of-use" element={<TermsOfUse />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/where-you-can-use" element={<WhereYouCanUse />} />

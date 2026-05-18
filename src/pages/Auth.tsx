@@ -432,22 +432,22 @@ export default function Auth() {
                 {...signupForm.register("full_name")} 
                 /> */}
                 <Input
-  id="full_name"
-  type="text"
-  placeholder="Your full name"
-  autoComplete="name"
-  aria-invalid={!!signupForm.formState.errors.full_name}
-  className={cn(
-    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
-    
-    // browser autofill fix
-    "autofill:bg-black autofill:text-white",
+                  id="full_name"
+                  type="text"
+                  placeholder="Your full name"
+                  autoComplete="name"
+                  aria-invalid={!!signupForm.formState.errors.full_name}
+                  className={cn(
+                    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
 
-    signupForm.formState.errors.full_name &&
-      "border-destructive focus-visible:ring-destructive"
-  )}
-  {...signupForm.register("full_name")}
-/>
+                    // browser autofill fix
+                    "autofill:bg-black autofill:text-white",
+
+                    signupForm.formState.errors.full_name &&
+                    "border-destructive focus-visible:ring-destructive"
+                  )}
+                  {...signupForm.register("full_name")}
+                />
                 {signupForm.formState.errors.full_name && (
                   <p className="text-xs text-destructive">{signupForm.formState.errors.full_name.message}</p>
                 )}
@@ -468,23 +468,23 @@ export default function Auth() {
                 {...(isSignin ? signinForm.register("email") : signupForm.register("email"))}
               /> */}
               <Input
-  id="email"
-  type="email"
-  placeholder="Enter your email"
-  autoComplete="email"
-  aria-invalid={!!emailErr}
-  className={cn(
-    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
-    
-    // autofill fix
-    "[-webkit-autofill]:shadow-[0_0_0px_1000px_rgba(0,0,0,1)_inset] [-webkit-autofill]:[-webkit-text-fill-color:white]",
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                autoComplete="email"
+                aria-invalid={!!emailErr}
+                className={cn(
+                  "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
 
-    emailErr && "border-destructive focus-visible:ring-destructive"
-  )}
-  {...(isSignin
-    ? signinForm.register("email")
-    : signupForm.register("email"))}
-/>
+                  // autofill fix
+                  "[-webkit-autofill]:shadow-[0_0_0px_1000px_rgba(0,0,0,1)_inset] [-webkit-autofill]:[-webkit-text-fill-color:white]",
+
+                  emailErr && "border-destructive focus-visible:ring-destructive"
+                )}
+                {...(isSignin
+                  ? signinForm.register("email")
+                  : signupForm.register("email"))}
+              />
               {emailErr && <p className="text-xs text-destructive">{emailErr.message}</p>}
             </div>
 
@@ -504,23 +504,23 @@ export default function Auth() {
                   {...signupForm.register("phone")}
                 /> */}
                 <Input
-  id="phone"
-  type="tel"
-  inputMode="numeric"
-  placeholder="10-digit mobile number"
-  autoComplete="tel"
-  aria-invalid={!!signupForm.formState.errors.phone}
-  className={cn(
-    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
+                  id="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="10-digit mobile number"
+                  autoComplete="tel"
+                  aria-invalid={!!signupForm.formState.errors.phone}
+                  className={cn(
+                    "pr-10 bg-black/40 border-cyan-500/20 text-white placeholder:text-cyan-200/30 focus-visible:ring-cyan-400 focus-visible:border-cyan-400",
 
-    // autofill fix
-    "[-webkit-autofill]:shadow-[0_0_0px_1000px_rgba(0,0,0,1)_inset] [-webkit-autofill]:[-webkit-text-fill-color:white]",
+                    // autofill fix
+                    "[-webkit-autofill]:shadow-[0_0_0px_1000px_rgba(0,0,0,1)_inset] [-webkit-autofill]:[-webkit-text-fill-color:white]",
 
-    signupForm.formState.errors.phone &&
-      "border-destructive focus-visible:ring-destructive"
-  )}
-  {...signupForm.register("phone")}
-/>
+                    signupForm.formState.errors.phone &&
+                    "border-destructive focus-visible:ring-destructive"
+                  )}
+                  {...signupForm.register("phone")}
+                />
                 {signupForm.formState.errors.phone && (
                   <p className="text-xs text-destructive">{signupForm.formState.errors.phone.message}</p>
                 )}
@@ -582,47 +582,27 @@ export default function Auth() {
 
           <div className="mt-7 text-center text-sm text-muted-foreground">
             {isSignin ? (
-              // <>
-              //   Don&apos;t have an account?{" "}
-              //   <button
-              //     type="button"
-              //     onClick={() => {
-              //       setMode("signup");
-              //       signupForm.reset();
-              //       setTrialAckUserId(null);
-              //     }}
-              //     className="text-primary font-medium hover:underline"
-              //   >
-              //     Create your business account
-              //   </button>
-              // </>
               <>
-  <div className="text-sm text-muted-foreground">
-    Don&apos;t have an account?
-  </div>
+                <div className="text-sm text-muted-foreground">
+                  Don&apos;t have an account?
+                </div>
 
-  <button
-    type="button"
-    onClick={() => {
-      setMode("signup");
-      signupForm.reset();
-      setTrialAckUserId(null);
-    }}
-    className="
-    text-primary
-    text-2xl
-  font-bold
-    hover:underline      
-    "
-  >
-    Create your business account
-  </button>
-</>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signup");
+                    signupForm.reset();
+                    setTrialAckUserId(null);
+                  }}
+                  className="text-primary text-2xl font-bold hover:underline"
+                >
+                  Create your business account
+                </button>
+              </>
             ) : (
               <>
                 Already have one?{" "}
-                <button
-                  type="button"
+                <button type="button"
                   onClick={() => {
                     setMode("signin");
                     signinForm.reset();

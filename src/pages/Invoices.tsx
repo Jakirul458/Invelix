@@ -403,7 +403,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Loader2, Search, Plus, Eye, FileText,
-  IndianRupee, AlertCircle, CheckCircle2, X, Trash2,
+  IndianRupee, AlertCircle, CheckCircle2, X, Trash2, Download,
 } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -510,6 +510,115 @@ export default function Invoices() {
   function clearFilters() { setSearch(""); setStatus("all"); setDateFrom(""); setDateTo(""); }
   function confirmDelete(inv: Invoice) { setDeletingId(inv.id); setDeletingNo(inv.invoice_no); }
 
+  // Export to Excel
+  function exportToExcel() {
+    if (filtered.length === 0) {
+      toast({ title: "No data to export", description: "Apply filters and try again", variant: "destructive" });
+      return;
+    }
+
+    const header = ["Invoice No", "Customer Name", "Phone", "Date", "Total Amount", "Paid Amount", "Due Amount", "Status"];
+    const data = filtered.map(i => [
+      i.invoice_no,
+      i.customer_name,
+      i.customer_phone || "",
+      new Date(i.created_at).toLocaleDateString("en-IN"),
+      i.final_amount,
+      i.paid_amount,
+      i.due_amount,
+      i.status
+    ]);
+
+    const csv = [header, ...data].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoices-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    toast({ title: "Exported successfully", description: `${filtered.length} invoices exported to Excel` });
+  }
+
+  // Export to PDF
+  function exportToPDF() {
+    if (filtered.length === 0) {
+      toast({ title: "No data to export", description: "Apply filters and try again", variant: "destructive" });
+      return;
+    }
+
+    let pdfContent = `
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; color: #333; }
+        .summary { margin: 20px 0; padding: 10px; background: #f5f5f5; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #333; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px; border-bottom: 1px solid #ddd; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .status-paid { color: #10B981; font-weight: bold; }
+        .status-partial { color: #F59E0B; font-weight: bold; }
+        .status-unpaid { color: #EF4444; font-weight: bold; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <h1>Invoice Report</h1>
+      <div class="summary">
+        <p><strong>Total Invoices:</strong> ${filtered.length}</p>
+        <p><strong>Total Amount:</strong> ₹${totals.total.toFixed(2)}</p>
+        <p><strong>Amount Collected:</strong> ₹${totals.paid.toFixed(2)}</p>
+        <p><strong>Amount Due:</strong> ₹${totals.due.toFixed(2)}</p>
+        <p><strong>Generated:</strong> ${new Date().toLocaleString("en-IN")}</p>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Invoice No</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Total</th>
+            <th>Paid</th>
+            <th>Due</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(i => `
+            <tr>
+              <td>${i.invoice_no}</td>
+              <td>${i.customer_name}${i.customer_phone ? `<br><small>${i.customer_phone}</small>` : ""}</td>
+              <td>${new Date(i.created_at).toLocaleDateString("en-IN")}</td>
+              <td>₹${i.final_amount.toFixed(2)}</td>
+              <td>₹${i.paid_amount.toFixed(2)}</td>
+              <td>₹${i.due_amount.toFixed(2)}</td>
+              <td><span class="status-${i.status}">${i.status.toUpperCase()}</span></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      <div class="footer">
+        <p>This is an auto-generated report from Invelix</p>
+      </div>
+    </body>
+    </html>
+    `;
+
+    const printWindow = window.open("", "", "height=600,width=800");
+    if (printWindow) {
+      printWindow.document.write(pdfContent);
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+      }, 250);
+    }
+    
+    toast({ title: "PDF ready", description: `${filtered.length} invoices ready to print/save as PDF` });
+  }
+
   return (
     <div className="space-y-6 p-1">
 
@@ -519,9 +628,29 @@ export default function Invoices() {
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">Invoices</h1>
           <p className="text-sm text-muted-foreground mt-1">Search, filter and manage all your invoices</p>
         </div>
-        <Button asChild className="gap-2 bg-foreground text-background hover:bg-foreground/85 h-9 px-4 text-sm font-medium rounded-lg shadow-none">
-          <Link to="/invoices/new"><Plus className="h-3.5 w-3.5" />New invoice</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={exportToExcel} 
+            variant="outline" 
+            className="gap-2 h-9 px-4 text-sm font-medium rounded-lg"
+            title="Export filtered invoices to Excel"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Excel
+          </Button>
+          <Button 
+            onClick={exportToPDF} 
+            variant="outline" 
+            className="gap-2 h-9 px-4 text-sm font-medium rounded-lg"
+            title="Export filtered invoices as PDF"
+          >
+            <Download className="h-3.5 w-3.5" />
+            PDF
+          </Button>
+          <Button asChild className="gap-2 bg-foreground text-background hover:bg-foreground/85 h-9 px-4 text-sm font-medium rounded-lg shadow-none">
+            <Link to="/invoices/new"><Plus className="h-3.5 w-3.5" />New invoice</Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stat strip */}
